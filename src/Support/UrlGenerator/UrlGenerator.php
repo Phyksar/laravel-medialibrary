@@ -17,6 +17,8 @@ interface UrlGenerator
 
     public function setConversion(Conversion $conversion): self;
 
+    public function setConversionName(string $conversionName): self;
+
     public function setPathGenerator(PathGenerator $pathGenerator): self;
 
     /**

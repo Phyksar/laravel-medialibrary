@@ -6,6 +6,7 @@ use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\Conversions\Conversion;
+use Spatie\MediaLibrary\Conversions\ConversionCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
 
@@ -35,6 +36,13 @@ abstract class BaseUrlGenerator implements UrlGenerator
     public function setConversion(Conversion $conversion): UrlGenerator
     {
         $this->conversion = $conversion;
+
+        return $this;
+    }
+
+    public function setConversionName(string $conversionName): UrlGenerator
+    {
+        $this->conversion = ConversionCollection::createForMedia($this->media)->getByName($conversionName);
 
         return $this;
     }
