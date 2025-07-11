@@ -14,6 +14,7 @@ use Spatie\MediaLibrary\MediaCollections\Exceptions\DiskDoesNotExist;
 use Spatie\MediaLibrary\MediaCollections\MediaRepository;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\ResponsiveImages\RegisteredResponsiveImages;
+use Spatie\MediaLibrary\Support\PathGenerator\DefaultPathGenerator;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGeneratorFactory;
 
 class CleanCommand extends Command
@@ -25,6 +26,7 @@ class CleanCommand extends Command
     {--force : Force the operation to run when in production},
     {--rate-limit= : Limit the number of requests per second},
     {--delete-orphaned : Delete orphaned media items},
+    {--delete-orphaned-directories : Delete orphaned directories},
     {--skip-conversions : Do not remove deprecated conversions}';
 
     protected $description = 'Clean deprecated conversions and files without related model.';
@@ -63,7 +65,9 @@ class CleanCommand extends Command
             $this->deleteFilesGeneratedForDeprecatedConversions();
         }
 
-        $this->deleteOrphanedDirectories();
+        if ($this->option('delete-orphaned-directories')) {
+            $this->deleteOrphanedDirectories();
+        }
 
         $this->info('All done!');
     }
@@ -181,6 +185,12 @@ class CleanCommand extends Command
 
     protected function deleteOrphanedDirectories(): void
     {
+        $pathGeneratorClass = config('media-library.path_generator', DefaultPathGenerator::class);
+        $customPathGeneratorClass = config('media-library.custom_path_generators', []);
+        if (($pathGeneratorClass !== DefaultPathGenerator::class) || $customPathGeneratorClass) {
+            $this->warn('Deleting orphaned directories is skipped because custom path generators are in use');
+        }
+
         $diskName = $this->argument('disk') ?: config('media-library.disk_name');
 
         if (is_null(config("filesystems.disks.{$diskName}"))) {
